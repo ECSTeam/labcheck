@@ -2,8 +2,9 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
+
+	"github.com/codegangsta/negroni"
 )
 
 func main() {
@@ -12,8 +13,19 @@ func main() {
 		port = "8101"
 	}
 
-	router := NewRouter()
 	log.Printf("starting on port:" + port)
 
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	server := NewServer()
+	server.Run(":" + port)
+
+	//log.Fatal(http.ListenAndServe(":"+port, router))
+}
+
+func NewServer() *negroni.Negroni {
+
+	n := negroni.Classic()
+	router := NewRouter()
+
+	n.UseHandler(router)
+	return n
 }
