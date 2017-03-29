@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,6 +19,10 @@ var (
 	})
 )
 
+func TestLabIndex(t *testing.T) {
+	//do
+}
+
 func TestCreateLab(t *testing.T) {
 	var (
 		request  *http.Request
@@ -29,7 +34,7 @@ func TestCreateLab(t *testing.T) {
 	labName := "Lab10"
 
 	recorder = httptest.NewRecorder()
-	request, _ = http.NewRequest("GET", "/labs/"+labName, nil)
+	request, _ = http.NewRequest("GET", "/lab/"+labName, nil)
 	server.ServeHTTP(recorder, request)
 
 	var lab Lab
@@ -52,11 +57,42 @@ func TestCreateLab(t *testing.T) {
 
 }
 
-func NewLab(id int, name string) *Lab {
-	if id < 0 {
+func TestNoTextAction(t *testing.T) {
+
+	var s Slack
+	s.Text = ""
+
+	labs := TryAction(s)
+
+	if labs == nil {
+		t.Errorf("Error Returning labs")
+	}
+}
+
+func TestAddLabAction(t *testing.T) {
+
+	var labname = "Lab10"
+	var s Slack
+	s.Text = labname
+
+	count1 := len(labs)
+	labs := TryAction(s)
+	count2 := len(labs)
+
+	for _, lb := range labs {
+		log.Print("lab &v", lb.Name)
+	}
+	log.Print("counts:", count1, count2)
+	if count1 >= count2 {
+		t.Errorf("Error creating Lab")
+	}
+}
+
+func NewLab(name string) *Lab {
+	if name != "" {
 		return nil
 	}
-	l := Lab{id, name, "foo", "bar", time.Now()}
+	l := Lab{"lab10", "out", "kmattson", time.Now()}
 	return &l
 }
 

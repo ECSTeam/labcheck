@@ -1,0 +1,5 @@
+---
+applications:
+  - name: labcheck
+    env:
+      GOVERSION: go1.7

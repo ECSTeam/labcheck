@@ -23,19 +23,25 @@ var routes = Routes{
 	Route{
 		"LabIndex",
 		"GET",
-		"/labs",
+		"/labindex",
 		LabIndex,
 	},
 	Route{
 		"LabShow",
 		"GET",
-		"/labs/{labName}",
+		"/lab/{labName}",
 		LabShow,
 	},
 	Route{
 		"LabCreate",
 		"POST",
-		"/labs",
+		"/labcreate",
 		LabCreate,
+	},
+	Route{
+		"LabCheck",
+		"POST",
+		"/labs",
+		LabCheck,
 	},
 }

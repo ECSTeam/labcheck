@@ -1,0 +1,7 @@
+package: github.com/kamattson/labcheck
+import:
+- package: github.com/codegangsta/negroni
+  version: ^0.2.0
+- package: github.com/gorilla/mux
+  version: ^1.3.0
+- package: github.com/unrolled/render
