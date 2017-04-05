@@ -1,17 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
-
-	"github.com/codegangsta/negroni"
-	"github.com/unrolled/render"
-)
+import "github.com/unrolled/render"
 
 var (
 	formatter = render.New(render.Options{
@@ -19,10 +8,7 @@ var (
 	})
 )
 
-func TestLabIndex(t *testing.T) {
-	//do
-}
-
+/*
 func TestCreateLab(t *testing.T) {
 	var (
 		request  *http.Request
@@ -31,7 +17,7 @@ func TestCreateLab(t *testing.T) {
 
 	server := MakeTestServer()
 
-	labName := "Lab10"
+	labName := "lab10"
 
 	recorder = httptest.NewRecorder()
 	request, _ = http.NewRequest("GET", "/lab/"+labName, nil)
@@ -51,40 +37,53 @@ func TestCreateLab(t *testing.T) {
 		t.Errorf("Error unmarshaling  response to Lab: %v", err)
 	}
 
-	if lab.Name != "Lab10" {
+	if lab.Name != labName {
 		t.Errorf("Expected Lab10, got %v", lab.Name)
 	}
 
 }
+func TestCheckout(t *testing.T) {
+	log.Print("/// TestCheckout ///")
+	var s Slack
+	var labName = "lab01"
+
+	s.Text = "checkout " + labName
+	TryAction(s)
+	labx, _ := RepoFindLab(labName)
+	log.Print(labName, " status:", labx.Status)
+	if strings.Compare(labx.Status, "InUse") != 0 {
+		t.Errorf("Error Returning labs  //TestCheckout//")
+	}
+}
 
 func TestNoTextAction(t *testing.T) {
-
+	log.Print("/// TestNoTextAction ///")
 	var s Slack
 	s.Text = ""
 
-	labs := TryAction(s)
+	TryAction(s)
 
+	log.Print("Labs :", labs)
 	if labs == nil {
-		t.Errorf("Error Returning labs")
+		t.Errorf("Error Returning labs //TestNoTextAction//")
 	}
 }
 
 func TestAddLabAction(t *testing.T) {
+	log.Print("/// TestAddLabAction ///")
 
-	var labname = "Lab10"
+	//todo fix this
+	var labname = "lab10"
 	var s Slack
 	s.Text = labname
 
 	count1 := len(labs)
-	labs := TryAction(s)
+	TryAction(s)
 	count2 := len(labs)
 
-	for _, lb := range labs {
-		log.Print("lab &v", lb.Name)
-	}
 	log.Print("counts:", count1, count2)
 	if count1 >= count2 {
-		t.Errorf("Error creating Lab")
+		t.Errorf("Error creating Lab //TestAddLabAction//")
 	}
 }
 
@@ -99,3 +98,4 @@ func NewLab(name string) *Lab {
 func MakeTestServer() *negroni.Negroni {
 	return NewServer()
 }
+*/

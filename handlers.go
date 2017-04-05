@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -26,7 +28,10 @@ func LabIndex(w http.ResponseWriter, r *http.Request) {
 func LabShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	labName := vars["labName"]
-	lab := RepoFindLab(labName)
+	lab, err := RepoFindLab(labName)
+	if err != nil {
+		Render.JSON(w, http.StatusUnprocessableEntity, map[string]string{labName: "Not Found!"})
+	}
 	Render.JSON(w, http.StatusOK, lab)
 }
 
@@ -44,7 +49,6 @@ func LabCreate(w http.ResponseWriter, r *http.Request) {
 	if err := Render.JSON(w, http.StatusCreated, t); err != nil {
 		panic(err)
 	}
-
 }
 
 //LabCheck handler for POST /labs
@@ -56,15 +60,55 @@ func LabCheck(w http.ResponseWriter, r *http.Request) {
 	for key, values := range r.PostForm {
 		log.Printf("key=%v, value=%v", key, values)
 	}
-
 	defer r.Body.Close()
-
 	var slack = initSlack(r)
-	log.Printf("hello: " + slack.User)
-	log.Printf("the cmd: " + slack.Command + "///")
+	Render.JSON(w, http.StatusOK, ProcessRequest(slack))
 
-	Render.JSON(w, http.StatusUnprocessableEntity, TryAction(slack))
+}
 
+func ProcessRequest(s Slack) Labs {
+
+	if s.Text == "" {
+		return labs
+	}
+
+	stringSlice := strings.Split(s.Text, " ")
+
+	if strings.Contains(strings.ToLower(stringSlice[0]), "check") {
+		checkStatus := stringSlice[0]
+		labName := stringSlice[1]
+		lab, err := RepoFindLab(labName)
+		if err != nil {
+			panic(err)
+		}
+		lab.LastUpdate = time.Now()
+		if strings.Compare(checkStatus, "checkin") == 0 {
+			lab.Available = true
+			lab.User = ""
+		}
+		log.Print("comp", strings.Compare(checkStatus, "checkout"))
+		if strings.Compare(checkStatus, "checkout") == 0 {
+			lab.Available = false
+			lab.User = s.User
+		}
+		log.Printf("lab %v status %v: ", lab.Name, lab.Available)
+		return labs
+	}
+
+	if strings.Contains(strings.ToLower(stringSlice[0]), "lab") {
+		var labName = strings.ToLower(stringSlice[0])
+		lab, err := RepoFindLab(labName)
+		if err != nil {
+			RepoCreateLab(Lab{labName, true, "", "", s.User, time.Now()})
+			return labs
+		} else {
+			log.Printf("Lab %v already exists %v", stringSlice[0], lab)
+		}
+
+		return labs
+	}
+
+	return nil
 }
 
 func initSlack(r *http.Request) Slack {

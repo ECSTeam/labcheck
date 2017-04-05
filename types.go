@@ -4,11 +4,10 @@ import "time"
 
 //Lab object
 type Lab struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-	//Todo
-	//Version    string    `json:"version"`
-	//Tiles      string    `json:"tiles"`
+	Name       string    `json:"name"`
+	Available  bool      `json:"available"`
+	Version    string    `json:"version"`
+	Desc       string    `json:"desc"`
 	User       string    `json:"user"`
 	LastUpdate time.Time `json:"lastUpdated"`
 }

@@ -12,13 +12,11 @@ func main() {
 	if len(port) == 0 {
 		port = "8101"
 	}
-
 	log.Printf("starting on port:" + port)
 
 	server := NewServer()
 	server.Run(":" + port)
 
-	//log.Fatal(http.ListenAndServe(":"+port, router))
 }
 
 func NewServer() *negroni.Negroni {
