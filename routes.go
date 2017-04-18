@@ -14,9 +14,8 @@ type Route struct {
 type Routes []Route
 
 var routes = Routes{
-	Route{"Index", "GET", "/", Index},
-	Route{"LabIndex", "GET", "/labindex", LabIndex},
-	Route{"LabShow", "GET", "/lab/{labName}", LabShow},
-	Route{"LabCreate", "POST", "/labcreate", LabCreate},
-	Route{"LabCheck", "POST", "/labs", LabCheck},
+	Route{"index", "GET", "/", index},
+	Route{"labsHandler", "GET", "/labs", labsHandler},
+	Route{"loadData", "POST", "/load", loadData},
+	Route{"labCheck", "POST", "/labs", labCheck},
 }

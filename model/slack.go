@@ -1,18 +1,4 @@
-package main
-
-import "time"
-
-//Lab object
-type Lab struct {
-	Name       string    `json:"name"`
-	Available  bool      `json:"available"`
-	Version    string    `json:"version"`
-	Desc       string    `json:"desc"`
-	User       string    `json:"user"`
-	LastUpdate time.Time `json:"lastUpdated"`
-}
-
-type Labs []Lab
+package model
 
 type Slack struct {
 	Command     string `json:"command"`

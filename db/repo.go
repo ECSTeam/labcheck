@@ -1,19 +1,11 @@
-package main
+package db
 
-import (
-	"context"
-	"errors"
-	"log"
-	"strings"
-	"time"
+import "github.com/kamattson/labcheck/model"
 
-	"cloud.google.com/go/datastore"
-)
-
-var labs Labs
-var env = "ecs-pcf-on-gce-2016"
+var labs model.Lab
 
 // Give us some seed data
+/*
 func init() {
 	log.Print("init labs...")
 	RepoCreateLab(Lab{Name: "lab01", Available: true, Desc: "", User: "", LastUpdate: time.Now()})
@@ -28,22 +20,9 @@ func init() {
 	RepoCreateLab(Lab{Name: "lab10", Available: true, Desc: "", User: "", LastUpdate: time.Now()})
 
 	//InitDB(env)
-}
-
-//var dbclient *db
-
-func InitDB(dataSourceName string) {
-	var err error
-	//ctx := context.Background()
-	//db, err := datastore.NewClient(ctx, "ecs-pcf-on-gce-2016")
-
-	if err != nil {
-		log.Fatalf("Could not create datastore client: %v", err)
-	}
-
-}
-
-func LoadLabs() {
+}*/
+/*
+func LoadLabs(labs model.Labs) error {
 	ctx := context.Background()
 	client, _ := datastore.NewClient(ctx, env)
 	for _, l := range labs {
@@ -51,29 +30,37 @@ func LoadLabs() {
 		key, err := AddLab(ctx, client, l)
 		if err != nil {
 			log.Printf("ERROR %+v", err)
+			return err
 		}
 		log.Printf("Key %+v", key)
 
 	}
-
+	return nil
 }
-
+*/
+/*
 //ListLabs lists all labs
-func ListLabs() ([]*Lab, error) {
-	var labs []*Lab
+func ListLabs() ([]Lab, error) {
+	var labs []Lab
 	var err error
 	ctx := context.Background()
 	client, _ := datastore.NewClient(ctx, env)
 
-	query := datastore.NewQuery("Task").Order("created")
+	query := datastore.NewQuery("Lab").Order("Name")
+
+	fmt.Printf("query %+v", query)
+	fmt.Printf("\n")
+
 	keys, err := client.GetAll(ctx, query, &labs)
+	fmt.Printf("keys %+v", keys)
+	fmt.Printf("\n")
 	if err != nil {
 		return nil, err
 	}
 
 	// Set the id field on each Lab from the corresponding key.
 	for i, key := range keys {
-		labs[i].Name = key.String()
+		labs[i].ID = key.String()
 	}
 
 	return labs, err
@@ -81,13 +68,13 @@ func ListLabs() ([]*Lab, error) {
 
 // AddLab adds a lab to the datastore,
 // returning the key of the newly created entity.
-func AddLab(ctx context.Context, client *datastore.Client, lab Lab) (*datastore.Key, error) {
+func AddLab(ctx context.Context, client *datastore.Client, lab model.Lab) (*datastore.Key, error) {
 	key := datastore.IncompleteKey("Lab", nil)
 	return client.Put(ctx, key, &lab)
 }
 
 //RepoFindLab find lab in repo
-func RepoFindLab(labName string) (Lab, error) {
+func RepoFindLab(labName string) (model.Lab, error) {
 	for _, t := range labs {
 		if strings.Compare(t.Name, labName) == 0 {
 			return t, nil
@@ -98,11 +85,11 @@ func RepoFindLab(labName string) (Lab, error) {
 }
 
 //RepoCreateLab create a lab and append to slice
-func RepoCreateLab(t Lab) Lab {
+func RepoCreateLab(t model.Lab) Lab {
 	labs = append(labs, t)
 	return t
 }
-func DeleteLabs() error {
+func DeleteLabs(labs model.Labs) error {
 	ctx := context.Background()
 	client, _ := datastore.NewClient(ctx, env)
 	for _, l := range labs {
@@ -121,3 +108,4 @@ func DeleteLab(ctx context.Context, client *datastore.Client, labName string) er
 	log.Printf("deleting..%v", labName)
 	return client.Delete(ctx, datastore.NameKey("Lab", labName, nil))
 }
+*/

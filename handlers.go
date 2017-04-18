@@ -9,50 +9,44 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/kamattson/labcheck/db"
+	"github.com/kamattson/labcheck/model"
 )
 
-// Index convenience
-func Index(w http.ResponseWriter, r *http.Request) {
+func index(w http.ResponseWriter, r *http.Request) {
 	Render.JSON(w, http.StatusOK, map[string]string{"welcome": "This is rendered JSON!"})
 }
 
-//LabIndex handler for /labindex
-func LabIndex(w http.ResponseWriter, r *http.Request) {
-	if err := Render.JSON(w, http.StatusOK, labs); err != nil {
-		panic(err)
-	}
-}
+//LabsHandler handler for GET on /labs
+func labsHandler(w http.ResponseWriter, r *http.Request) {
+	l, err := db.DB.ListLabs()
 
-//LabShow handler for /labs/{labName}
-func LabShow(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	labName := vars["labName"]
-	lab, err := RepoFindLab(labName)
 	if err != nil {
-		Render.JSON(w, http.StatusUnprocessableEntity, map[string]string{labName: "Not Found!"})
+		log.Printf("could not list labs: %v", err)
 	}
-	Render.JSON(w, http.StatusOK, lab)
+	Render.JSON(w, http.StatusOK, l)
 }
 
-//LabCreate handler for POST /labs
-func LabCreate(w http.ResponseWriter, r *http.Request) {
-	var lab Lab
+//LoadData handler for POST /load
+func loadData(w http.ResponseWriter, r *http.Request) {
+	var labs []model.Lab
 	defer r.Body.Close()
 	payload, _ := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
 
-	if err := json.Unmarshal(payload, &lab); err != nil {
+	if err := json.Unmarshal(payload, &labs); err != nil {
 		Render.JSON(w, http.StatusUnprocessableEntity, err)
 	}
 
-	t := RepoCreateLab(lab)
-	if err := Render.JSON(w, http.StatusCreated, t); err != nil {
+	if err := db.DB.LoadLabs(labs); err != nil {
+		log.Printf("error loading labs...%v", err)
+	}
+	if err := Render.JSON(w, http.StatusCreated, map[string]string{"Success": "Labs created successfully!"}); err != nil {
 		panic(err)
 	}
 }
 
 //LabCheck handler for POST /labs
-func LabCheck(w http.ResponseWriter, r *http.Request) {
+func labCheck(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		Render.JSON(w, http.StatusUnprocessableEntity, err)
 	}
@@ -62,57 +56,56 @@ func LabCheck(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	var slack = initSlack(r)
-	Render.JSON(w, http.StatusOK, ProcessRequest(slack))
 
-}
+	stringSlice := strings.Split(slack.Text, " ")
 
-func ProcessRequest(s Slack) Labs {
-
-	if s.Text == "" {
-		return labs
-	}
-
-	stringSlice := strings.Split(s.Text, " ")
-
+	//if text starts with check - do some checkin/checkout logic
 	if strings.Contains(strings.ToLower(stringSlice[0]), "check") {
 		checkStatus := stringSlice[0]
-		labName := stringSlice[1]
-		lab, err := RepoFindLab(labName)
+		//get lab by name which should be the 2nd string
+		lab, err := db.DB.GetLabByName(stringSlice[1])
+
+		//entity not found, return a 204
 		if err != nil {
-			panic(err)
+			Render.JSON(w, http.StatusNoContent, err)
+			return
 		}
+
 		lab.LastUpdate = time.Now()
 		if strings.Compare(checkStatus, "checkin") == 0 {
 			lab.Available = true
 			lab.User = ""
 		}
-		log.Print("comp", strings.Compare(checkStatus, "checkout"))
 		if strings.Compare(checkStatus, "checkout") == 0 {
 			lab.Available = false
-			lab.User = s.User
+			lab.User = slack.User
 		}
 		log.Printf("lab %v status %v: ", lab.Name, lab.Available)
-		return labs
+		db.DB.UpdateLab(lab)
+
+		Render.JSON(w, http.StatusOK, lab)
+
 	}
 
-	if strings.Contains(strings.ToLower(stringSlice[0]), "lab") {
-		var labName = strings.ToLower(stringSlice[0])
-		lab, err := RepoFindLab(labName)
-		if err != nil {
-			RepoCreateLab(Lab{labName, true, "", "", s.User, time.Now()})
+	/*
+		if strings.Contains(strings.ToLower(stringSlice[0]), "lab") {
+			var labName = strings.ToLower(stringSlice[0])
+			lab, err := RepoFindLab(labName)
+			if err != nil {
+				RepoCreateLab(Lab{labName, true, "", "", s.User, time.Now()})
+				return labs
+			} else {
+				log.Printf("Lab %v already exists %v", stringSlice[0], lab)
+			}
+
 			return labs
-		} else {
-			log.Printf("Lab %v already exists %v", stringSlice[0], lab)
 		}
+	*/
 
-		return labs
-	}
-
-	return nil
 }
 
-func initSlack(r *http.Request) Slack {
-	var slack Slack
+func initSlack(r *http.Request) model.Slack {
+	var slack model.Slack
 	slack.Command = r.FormValue("command")
 	slack.User = r.FormValue("user_name")
 	slack.Text = r.FormValue("text")

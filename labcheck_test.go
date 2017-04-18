@@ -1,19 +1,51 @@
 package main
 
-import "github.com/unrolled/render"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/codegangsta/negroni"
+	"github.com/kamattson/labcheck/model"
+	"github.com/unrolled/render"
+)
 
 var (
+	request   *http.Request
+	recorder  *httptest.ResponseRecorder
+	lab       model.Lab
 	formatter = render.New(render.Options{
 		IndentJSON: true,
 	})
 )
 
+func TestLabsHandler(t *testing.T) {
+	server := MakeTestServer()
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest("GET", "/labs", nil)
+	server.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Errorf("Expected %v; received %v", http.StatusOK, recorder.Code)
+	}
+	payload, err := ioutil.ReadAll(recorder.Body)
+	if err != nil {
+		t.Errorf("Error parsing response body: %v", err)
+	}
+	err = json.Unmarshal(payload, &lab)
+	if err != nil {
+		t.Errorf("Error unmarshaling  response to Lab: %v", err)
+	}
+	fmt.Printf("/labs/%+v", lab)
+
+}
+
 /*
 func TestCreateLab(t *testing.T) {
-	var (
-		request  *http.Request
-		recorder *httptest.ResponseRecorder
-	)
+
 
 	server := MakeTestServer()
 
@@ -94,8 +126,8 @@ func NewLab(name string) *Lab {
 	l := Lab{"lab10", "out", "kmattson", time.Now()}
 	return &l
 }
+*/
 
 func MakeTestServer() *negroni.Negroni {
 	return NewServer()
 }
-*/
