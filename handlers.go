@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -50,12 +51,17 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		Render.JSON(w, http.StatusUnprocessableEntity, err)
 	}
-
-	for key, values := range r.PostForm {
-		log.Printf("key=%v, value=%v", key, values)
-	}
 	defer r.Body.Close()
 	var slack = initSlack(r)
+
+	if len(strings.TrimSpace(slack.Text)) == 0 {
+		l, err := db.DB.ListLabs()
+		if err != nil {
+			log.Printf("could not list labs: %v", err)
+		}
+		Render.JSON(w, http.StatusOK, l)
+		return
+	}
 
 	stringSlice := strings.Split(slack.Text, " ")
 
@@ -64,13 +70,11 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 		checkStatus := stringSlice[0]
 		//get lab by name which should be the 2nd string
 		lab, err := db.DB.GetLabByName(stringSlice[1])
-
 		//entity not found, return a 204
 		if err != nil {
 			Render.JSON(w, http.StatusNoContent, err)
 			return
 		}
-
 		lab.LastUpdate = time.Now()
 		if strings.Compare(checkStatus, "checkin") == 0 {
 			lab.Available = true
@@ -84,23 +88,43 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 		db.DB.UpdateLab(lab)
 
 		Render.JSON(w, http.StatusOK, lab)
-
+		return
 	}
 
-	/*
-		if strings.Contains(strings.ToLower(stringSlice[0]), "lab") {
-			var labName = strings.ToLower(stringSlice[0])
-			lab, err := RepoFindLab(labName)
-			if err != nil {
-				RepoCreateLab(Lab{labName, true, "", "", s.User, time.Now()})
-				return labs
-			} else {
-				log.Printf("Lab %v already exists %v", stringSlice[0], lab)
-			}
-
-			return labs
+	if strings.Contains(strings.ToLower(stringSlice[0]), "status") {
+		var labName = strings.ToLower(stringSlice[1])
+		lab, err := db.DB.GetLabByName(labName)
+		if err != nil {
+			Render.JSON(w, http.StatusNotFound, labName)
+			return
 		}
-	*/
+		Render.JSON(w, http.StatusOK, lab)
+		return
+	}
+
+	if strings.Contains(strings.ToLower(stringSlice[0]), "update") {
+		var labName = strings.ToLower(stringSlice[1])
+		var rgx = regexp.MustCompile(`\{(.*?)\}`)
+		var rs = rgx.FindStringSubmatch(slack.Text)
+		var l model.Lab
+		b := []byte("{" + rs[1] + "}")
+		err := json.Unmarshal(b, &l)
+		if err != nil {
+			Render.JSON(w, http.StatusNotModified, err)
+			return
+		}
+
+		lab, err := db.DB.GetLabByName(labName)
+		if err != nil {
+			Render.JSON(w, http.StatusNotFound, labName)
+			return
+		}
+		lab.LastUpdate = time.Now()
+		lab.Desc = l.Desc
+		lab.Version = l.Version
+		db.DB.UpdateLab(lab)
+
+	}
 
 }
 

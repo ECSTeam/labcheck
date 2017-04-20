@@ -50,13 +50,13 @@ func (db *memoryDB) LoadLabs(l []model.Lab) (err error) {
 }
 
 // AddLab saves a given lab, assigning it a new ID.
-func (db *memoryDB) AddLab(l *model.Lab) (id int64, err error) {
+func (db *memoryDB) AddLab(l *model.Lab) (err error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	db.labs[db.nextID] = l
 	db.nextID++
 
-	return 0, nil
+	return nil
 }
 
 // DeleteLab removes a given lab by its ID.

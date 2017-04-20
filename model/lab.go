@@ -24,7 +24,7 @@ type LabDatabase interface {
 	LoadLabs(l []Lab) (err error)
 
 	// AddLab saves a given Lab, assigning it a new name.
-	AddLab(l *Lab) (id int64, err error)
+	AddLab(l *Lab) (err error)
 
 	// DeleteLab removes a given Lab by its name.
 	DeleteLab(name string) error

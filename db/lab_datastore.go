@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -45,7 +44,6 @@ func (db *datastoreDB) LoadLabs(l []model.Lab) (err error) {
 
 	for _, lab := range l {
 		keys = append(keys, datastore.NameKey("Lab", lab.Name, nil))
-		//keys = append(keys, datastore.IncompleteKey("Lab", nil))
 	}
 	_, err = db.client.PutMulti(ctx, keys, l)
 
@@ -55,15 +53,14 @@ func (db *datastoreDB) LoadLabs(l []model.Lab) (err error) {
 	return nil
 }
 
-func (db *datastoreDB) AddLab(l *model.Lab) (id int64, err error) {
+func (db *datastoreDB) AddLab(l *model.Lab) (err error) {
 	ctx := context.Background()
 	k := datastore.NameKey("Lab", l.Name, nil)
-	k, err = db.client.Put(ctx, k, l)
+	_, err = db.client.Put(ctx, k, l)
 	if err != nil {
-		return 0, fmt.Errorf("datastoredb: could not put Lab: %v", err)
+		return fmt.Errorf("datastoredb: could not put Lab: %v", err)
 	}
-	log.Printf("k%v", k)
-	return 0, nil
+	return nil
 }
 
 func (db *datastoreDB) DeleteLab(name string) error {
@@ -79,18 +76,10 @@ func (db *datastoreDB) DeleteLab(name string) error {
 func (db *datastoreDB) UpdateLab(l *model.Lab) error {
 	ctx := context.Background()
 	labKey := datastore.NameKey("Lab", l.Name, nil)
-	log.Printf("labkey%+v", labKey)
 
 	if _, err := db.client.Put(ctx, labKey, l); err != nil {
-		log.Fatalf("tx.Put: %v", err)
+		log.Printf("client.Put: %v", err)
 	}
-
-	/*
-		k := db.datastoreKey()
-		if _, err := db.client.Put(ctx, k, l); err != nil {
-			return fmt.Errorf("datastoredb: could not update Lab: %v", err)
-		}
-	*/
 	return nil
 }
 
@@ -113,30 +102,18 @@ func (db *datastoreDB) ListLabs() ([]*model.Lab, error) {
 // GetLabByName returns a lab by name
 func (db *datastoreDB) GetLabByName(name string) (*model.Lab, error) {
 	ctx := context.Background()
-
-	log.Printf("Name = %v", name)
 	q := datastore.NewQuery("Lab").
 		Filter("Name =", name)
-
-	log.Printf("query%+v", q)
 
 	it := db.client.Run(ctx, q)
 	for {
 		var l model.Lab
 		_, err := it.Next(&l)
-
 		if err == iterator.Done {
-			break
+			return nil, fmt.Errorf("datastoredb: could not get lab: %v", err)
 		}
-
-		if err != nil {
-			log.Fatalf("Error fetching next lab: %v", err)
-		}
-
-		fmt.Printf("Lab %q,  %q\n", l.Desc, l.Name)
 		return &l, nil
 	}
-	return nil, errors.New("no lab found")
 }
 
 // Close closes the database.
