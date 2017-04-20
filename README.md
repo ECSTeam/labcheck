@@ -15,12 +15,12 @@ Checkin when you are done with the lab, clears your username and mark lab as Ava
 `/labs status <labname>`
 Returns information on a single lab
 
-`/labs update <labname> {"version"="x.x", "desc"="..."}`
+`/labs update <labname> {"version":"x.x", "desc":"..."}`
 Updates lab version and description. Wrap version/desc in JSON format.
 Use the description to add tiles, apps, services or whatever is relevant to the particular lab.
 
 TODO:
 Add and delete labs.  Search to be used for answering the question 'which lab has -blah-'
-/labs add labxx {version='x.x', desc='....'}
+/labs add labxx {"version":"x.x", "desc":"...."}
 /labs delete labxx
 /labs search <searchterm>
