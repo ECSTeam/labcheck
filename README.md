@@ -11,8 +11,8 @@ Labcheck is a checkin/checkout system for keeping track of ECS lab environment. 
 |`/labs update labxx {"version":"x.x", "desc":"..."}`|  Update lab version and description ie. tiles, apps.  Use JSON notation for version and desc.|ephemeral|
 |`/labs help`| Link to this page on github.| ephemeral |
 
-#TODOs:
- Search to be used for answering questions like 'which labs have the mysql tile installed?'
+#TODOs: \n
+ Search to be used for answering questions like 'which labs have the mysql tile installed?' \n
 `/labs search <searchterm>`
 
 Add and delete labs.
