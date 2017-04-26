@@ -1,0 +1,34 @@
+<html>
+<head>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <script language="javascript">
+  function showcolor(b, name){
+    alert("I am an alert box!");
+    if (b == true){
+      alert("I am an alert box2!");
+      document.getElementById( name ).style.backgroundColor = 'green';
+
+     }
+  }
+  </script>
+</head>
+<body>
+  <div class="divTable">
+    <div class="divTableBody">
+    <div class="divTableRow">
+      <div class="divTableCell">Lab</div>
+      <div class="divTableCell">{{ .Name }}</div>
+    </div>
+    <div class="divTableRow">
+      <div class="divTableCell">Description</div>
+      <div class="divTableCell">{{ .Desc }}</div>
+    </div>
+    <div class="divTableRow">
+      <div class="divTableCell">Available</div>
+      <div class="divTableCell" id="{{ .Name }}">{{ .Available }}</div>
+        <script type="text/javascript">showcolor(true, {{ .Name }});</script>
+    </div>
+    </div>
+    </div>
+</body>
+</html>

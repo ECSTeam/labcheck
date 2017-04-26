@@ -4,3 +4,4 @@ applications:
     env:
       GOVERSION: go1.7
       GOOGLE_APPLICATION_CREDENTIALS: ./ECSGCPCert.json
+      LOCAL: false

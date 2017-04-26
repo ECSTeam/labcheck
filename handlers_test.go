@@ -1,15 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
+	"github.com/ECSTeam/labcheck/model"
 	"github.com/codegangsta/negroni"
-	"github.com/kamattson/labcheck/model"
 	"github.com/unrolled/render"
 )
 
@@ -22,6 +18,7 @@ var (
 	})
 )
 
+/*
 func TestLabsHandler(t *testing.T) {
 	server := MakeTestServer()
 	recorder = httptest.NewRecorder()
@@ -42,7 +39,7 @@ func TestLabsHandler(t *testing.T) {
 	fmt.Printf("/labs/%+v", lab)
 
 }
-
+*/
 /*
 func TestCreateLab(t *testing.T) {
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kamattson/labcheck/model"
+	"github.com/ECSTeam/labcheck/model"
 
 	"cloud.google.com/go/datastore"
 )

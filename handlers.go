@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/kamattson/labcheck/db"
-	"github.com/kamattson/labcheck/model"
+	"github.com/ECSTeam/labcheck/db"
+	"github.com/ECSTeam/labcheck/helpers"
+	"github.com/ECSTeam/labcheck/model"
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -48,19 +50,70 @@ func loadData(w http.ResponseWriter, r *http.Request) {
 
 //LabCheck handler for POST /labs
 func labCheck(w http.ResponseWriter, r *http.Request) {
+
 	if err := r.ParseForm(); err != nil {
 		Render.JSON(w, http.StatusUnprocessableEntity, err)
 	}
 	defer r.Body.Close()
-	var slack = initSlack(r)
+	if os.Getenv("LOCAL") == "false" {
+		if helpers.CheckToken(r.FormValue("token")) == false {
+			//put call to token helper here
+			Render.JSON(w, http.StatusUnauthorized, "invalid token")
+		}
 
+	}
+
+	var slack = initSlackRequest(r)
+	var slackResponse SlackResponse
+	var comment = ""
+	var rgx = regexp.MustCompile(`\{(.*?)\}`)
+
+	//empty texts returns all labs
 	if len(strings.TrimSpace(slack.Text)) == 0 {
 		l, err := db.DB.ListLabs()
 		if err != nil {
 			log.Printf("could not list labs: %v", err)
 		}
-		Render.JSON(w, http.StatusOK, l)
+		slackResponse.ResponseType = "ephemeral"
+		slackResponse.Text = "Labs"
+		slackResponse.Attachments = make([]Attachments, 0)
+
+		for _, lab := range l {
+
+			attachment := Attachments{
+				Pretext:   lab.Name,
+				Color:     color(lab.Available),
+				Text:      "version: " + lab.Version + " Description:" + lab.Desc,
+				Footer:    lab.User,
+				Timestamp: lab.LastUpdate.Unix(),
+			}
+			slackResponse.Attachments = append(slackResponse.Attachments, attachment)
+		}
+
+		Render.JSON(w, http.StatusOK, slackResponse)
 		return
+	}
+
+	//labs help command
+	if slack.Text == "help" {
+		slackResponse.ResponseType = "ephemeral"
+		slackResponse.Text = "Labcheck Help"
+		slackResponse.Attachments = make([]Attachments, 0)
+		attachment := Attachments{
+			Title:     "Labcheck README.md page",
+			TitleLink: "https://github.com/ECSTeam/labcheck",
+			Text: `Commands:
+/labs
+/labs checkout labxx {"_optional comment_"}
+/labs checkin labxx
+/labs status labxx
+/labs update labxx {"version":"x.x", "desc":"..."}
+/labs help`,
+		}
+		slackResponse.Attachments = append(slackResponse.Attachments, attachment)
+		Render.JSON(w, http.StatusOK, slackResponse)
+		return
+
 	}
 
 	stringSlice := strings.Split(slack.Text, " ")
@@ -83,14 +136,30 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 		if strings.Compare(checkStatus, "checkout") == 0 {
 			lab.Available = false
 			lab.User = slack.User
+
+			var cmt = rgx.FindStringSubmatch(slack.Text)
+			if len(cmt) > 0 {
+				comment = cmt[1]
+			}
 		}
-		log.Printf("lab %v status %v: ", lab.Name, lab.Available)
 		db.DB.UpdateLab(lab)
 
-		Render.JSON(w, http.StatusOK, lab)
+		slackResponse.ResponseType = "in_channel"
+		slackResponse.Text = lab.Name
+
+		slackResponse.Attachments = make([]Attachments, 0)
+		attachment := Attachments{
+			Color:      color(lab.Available),
+			Title:      checkStatus,
+			AuthorName: slack.User,
+			Text:       comment,
+		}
+		slackResponse.Attachments = append(slackResponse.Attachments, attachment)
+		Render.JSON(w, http.StatusOK, slackResponse)
 		return
 	}
 
+	//labs status <labname>
 	if strings.Contains(strings.ToLower(stringSlice[0]), "status") {
 		var labName = strings.ToLower(stringSlice[1])
 		lab, err := db.DB.GetLabByName(labName)
@@ -98,16 +167,28 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 			Render.JSON(w, http.StatusNotFound, labName)
 			return
 		}
-		Render.JSON(w, http.StatusOK, lab)
+
+		slackResponse.Text = lab.Name
+
+		slackResponse.Attachments = make([]Attachments, 0)
+		attachment := Attachments{
+			Color:      color(lab.Available),
+			AuthorName: lab.User,
+			Text:       "version: " + lab.Version + " | Description: " + lab.Desc,
+			Timestamp:  lab.LastUpdate.Unix(),
+		}
+		slackResponse.Attachments = append(slackResponse.Attachments, attachment)
+
+		Render.JSON(w, http.StatusOK, slackResponse)
 		return
 	}
 
+	//labs update <labname>
 	if strings.Contains(strings.ToLower(stringSlice[0]), "update") {
 		var labName = strings.ToLower(stringSlice[1])
-		var rgx = regexp.MustCompile(`\{(.*?)\}`)
-		var rs = rgx.FindStringSubmatch(slack.Text)
+		var regexString = rgx.FindStringSubmatch(slack.Text)
 		var l model.Lab
-		b := []byte("{" + rs[1] + "}")
+		b := []byte("{" + regexString[1] + "}")
 		err := json.Unmarshal(b, &l)
 		if err != nil {
 			Render.JSON(w, http.StatusNotModified, err)
@@ -124,11 +205,34 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 		lab.Version = l.Version
 		db.DB.UpdateLab(lab)
 
+		slackResponse.Text = lab.Name
+
+		slackResponse.Attachments = make([]Attachments, 0)
+		attachment := Attachments{
+			Color:      color(lab.Available),
+			AuthorName: lab.User,
+			Text:       "version: " + lab.Version + " | Description: " + lab.Desc,
+			Timestamp:  lab.LastUpdate.Unix(),
+		}
+		slackResponse.Attachments = append(slackResponse.Attachments, attachment)
+
+		Render.JSON(w, http.StatusOK, slackResponse)
+
+		//HTML doesn't render in slack...but if it did!!!
+		//Render.HTML(w, http.StatusOK, "labs", lab)
 	}
 
 }
 
-func initSlack(r *http.Request) model.Slack {
+func color(c bool) string {
+	if c {
+		return "#000000"
+	}
+	return "#ff0000"
+
+}
+
+func initSlackRequest(r *http.Request) model.Slack {
 	var slack model.Slack
 	slack.Command = r.FormValue("command")
 	slack.User = r.FormValue("user_name")
@@ -143,4 +247,33 @@ func initSlack(r *http.Request) model.Slack {
 
 	return slack
 
+}
+
+//SlackResponse represents a slack response
+type SlackResponse struct {
+	ResponseType string        `json:"response_type"`
+	Text         string        `json:"text"`
+	Attachments  []Attachments `json:"attachments"`
+}
+
+type Attachments struct {
+	Fallback   string `json:"fallback"`
+	Color      string `json:"color"`
+	Pretext    string `json:"pretext"`
+	AuthorName string `json:"author_name"`
+	AuthorLink string `json:"author_link"`
+	Title      string `json:"title"`
+	TitleLink  string `json:"title_link"`
+	Text       string `json:"text"`
+	ImageURL   string `json:"image_url"`
+	ThumbURL   string `json:"thumb_url"`
+	Footer     string `json:"footer"`
+	FooterIcon string `json:"footer_icon"`
+	Timestamp  int64  `json:"ts"`
+}
+
+type Fields struct {
+	Title string `json:"title"`
+	Value string `json:"value"`
+	Short string `json:"short"`
 }

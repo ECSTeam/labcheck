@@ -1,5 +1,6 @@
 package model
 
+//Slack request type
 type Slack struct {
 	Command     string `json:"command"`
 	User        string `json:"user"`

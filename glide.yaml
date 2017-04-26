@@ -1,4 +1,4 @@
-package: github.com/kamattson/labcheck
+package: github.com/ECSTeam/labcheck
 import:
 - package: github.com/codegangsta/negroni
   version: ^0.2.0
