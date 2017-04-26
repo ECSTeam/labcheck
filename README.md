@@ -1,6 +1,9 @@
 # labcheck
 
-Labcheck is a checkin/checkout system for keeping track of ECS lab environment.  Use it to quickly reference PCF versions, tiles, apps, etc.  Responses are *ephemeral* _only you can see the response_, and *in_channel* _response appears to everyone in the channel_
+Labcheck is a checkin/checkout system for keeping track of ECS lab environment.  Use it to quickly reference PCF versions, tiles, apps, etc.  <br>
+Slack response modes are:
+   * **ephemeral** - only you can see the response
+   * **in_channel** - response appears to everyone in the channel
 
 | Command | Description | Slack Mode |
 |---|---|---|
@@ -11,8 +14,8 @@ Labcheck is a checkin/checkout system for keeping track of ECS lab environment. 
 |`/labs update labxx {"version":"x.x", "desc":"..."}`|  Update lab version and description ie. tiles, apps.  Use JSON notation for version and desc.|ephemeral|
 |`/labs help`| Link to this page on github.| ephemeral |
 
-#TODOs: \n
- Search to be used for answering questions like 'which labs have the mysql tile installed?' \n
+#TODOs: <br>
+ Search to be used for answering questions like 'which labs have the mysql tile installed?' <br>
 `/labs search <searchterm>`
 
 Add and delete labs.
