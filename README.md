@@ -2,12 +2,10 @@
 
 Labcheck is a checkin/checkout system for keeping track of ECS lab environment.  Use it to quickly reference PCF versions, tiles, apps, etc.  Responses are *ephemeral* _only you can see the response_, and *in_channel* _response appears to everyone in the channel_
 
-Usage:
-
-
-`/labs`   <_*ephemeral* returns info for all labs_>
-
-`/labs checkout _labname_ {"_optional comment_"}`  <_"in_channel" returns info on the lab you checked out with a comment.  The comment is not stored and only used for the Slack response_>
+| Command | Description | Slack Mode |
+|---|---|---|
+|`/labs`| Returns info for all labs | ephemeral |
+|`/labs checkout _labname_ {"_optional comment_"}`|Returns info on the lab you checked out with a comment.  The comment is not stored and only used for the Slack response | in_channel
 
 `/labs checkin <labname>`   <_"in_channel" returns a lab to available state_>
 
