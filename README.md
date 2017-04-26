@@ -5,11 +5,10 @@ Labcheck is a checkin/checkout system for keeping track of ECS lab environment. 
 | Command | Description | Slack Mode |
 |---|---|---|
 |`/labs`| Returns info for all labs | ephemeral |
-|`/labs checkout _labname_ {"_optional comment_"}`|Returns info on the lab you checked out with a comment.  The comment is not stored and only used for the Slack response | in_channel |
-|`/labs checkin <labname>`| Returns a lab to available state | in_channel |
-|`/labs status <labname>`|  Interested in a particular lab?  Use this.|ephemeral|
-|`/labs update <labname> {"version":"x.x", "desc":"_tiles, apps, etc._"}`|  Update lab version and
-    description ie. tiles, apps.  Use JSON notation for version and desc.|ephemeral|
+|`/labs checkout labxx {"_optional comment_"}`|Returns info on the lab you checked out with a comment.  The comment is not stored and only used for the Slack response | in_channel |
+|`/labs checkin labxx`| Returns a lab to available state | in_channel |
+|`/labs status labxx`|  Interested in a particular lab?  Use this.|ephemeral|
+|`/labs update labxx {"version":"x.x", "desc":"..."}`|  Update lab version and description ie. tiles, apps.  Use JSON notation for version and desc.|ephemeral|
 |`/labs help`| Link to this page on github.| ephemeral |
 
 #TODOs:
