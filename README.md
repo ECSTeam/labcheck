@@ -5,18 +5,15 @@ Labcheck is a checkin/checkout system for keeping track of ECS lab environment. 
 | Command | Description | Slack Mode |
 |---|---|---|
 |`/labs`| Returns info for all labs | ephemeral |
-|`/labs checkout _labname_ {"_optional comment_"}`|Returns info on the lab you checked out with a comment.  The comment is not stored and only used for the Slack response | in_channel
+|`/labs checkout _labname_ {"_optional comment_"}`|Returns info on the lab you checked out with a comment.  The comment is not stored and only used for the Slack response | in_channel |
+|`/labs checkin <labname>`| Returns a lab to available state | in_channel |
+|`/labs status <labname>`|  Interested in a particular lab?  Use this.|ephemeral|
+|`/labs update <labname> {"version":"x.x", "desc":"_tiles, apps, etc._"}`|  Update lab version and
+    description ie. tiles, apps.  Use JSON notation for version and desc.|ephemeral|
+|`/labs help`| Link to this page on github.| ephemeral |
 
-`/labs checkin <labname>`   <_"in_channel" returns a lab to available state_>
+#TODOs:
+ Search to be used for answering questions like 'which labs have the mysql tile installed?'
+`/labs search <searchterm>`
 
-`/labs status <labname>` <_"ephemeral" Interested in a particular lab?  Use this._>
-
-`/labs update <labname> {"version":"x.x", "desc":"_tiles, apps, etc._"}` <_"ephemeral" Update lab version and
-    descripion ie. tiles, apps.  Use JSON notation for version and desc._>
-
- `/labs help`  <_"ephemeral" to see this description. Feel free to make comments, improvements, bugs on github._>`
-TODO:
-Add and delete labs.  Search to be used for answering the question 'which lab has -blah-'
-/labs add labxx {"version":"x.x", "desc":"...."}
-/labs delete labxx
-/labs search <searchterm>
+Add and delete labs.
