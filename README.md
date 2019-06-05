@@ -5,6 +5,8 @@ Slack response modes are:
    * **ephemeral** - only you can see the response
    * **in_channel** - response appears to everyone in the channel
 
+#NOTE: _Turn off Smart Quotes on MAC OS, or the JSON wo't parse from the Slack Desktop app_
+
 | Command | Description | Slack Mode |
 |---|---|---|
 |`/labs`| Returns info for all labs | ephemeral |
@@ -20,5 +22,5 @@ Slack response modes are:
 
 Add and delete labs.
 
-# Delployment
+# Deployment
 Labcheck is currently deployed to `lab02 ecsteam | development` and uses google's Datastore cloud service to store it's data.
