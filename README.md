@@ -21,4 +21,4 @@ Slack response modes are:
 Add and delete labs.
 
 # Delployment
-Labcheck is currently deployed to `lab05 ecsteam | development` and uses google's Datastore cloud service to store it's data.
+Labcheck is currently deployed to `lab02 ecsteam | development` and uses google's Datastore cloud service to store it's data.
