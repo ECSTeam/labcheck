@@ -258,28 +258,29 @@ func initSlackRequest(r *http.Request) model.Slack {
 }
 
 func cleanupSmartQuotes(myText string) string {
-	myText = strings.ReplaceAll(myText, "\uFFFD", `'`)
-	myText = strings.ReplaceAll(myText, "\u201A", `'`)
-	myText = strings.ReplaceAll(myText, "\u2018", `'`)
-	myText = strings.ReplaceAll(myText, "\u2019", `'`)
-	myText = strings.ReplaceAll(myText, "\u201c", `"`)
-	myText = strings.ReplaceAll(myText, "\u201d", `"`)
-	myText = strings.ReplaceAll(myText, "\u201e", `"`)
-	myText = strings.ReplaceAll(myText, "\u02C6", `^`)
-	myText = strings.ReplaceAll(myText, "\u2039", `<`)
-	myText = strings.ReplaceAll(myText, "\u203A", `>`)
-	myText = strings.ReplaceAll(myText, "\u2013", `-`)
-	myText = strings.ReplaceAll(myText, "\u2014", `--`)
-	myText = strings.ReplaceAll(myText, "\u2026", `...`)
-	myText = strings.ReplaceAll(myText, "\u00A9", `(c)`)
-	myText = strings.ReplaceAll(myText, "\u00AE", `(r)`)
-	myText = strings.ReplaceAll(myText, "\u2122", `TM`)
-	myText = strings.ReplaceAll(myText, "\u00BC", `1/4`)
-	myText = strings.ReplaceAll(myText, "\u00BD", `1/2`)
-	myText = strings.ReplaceAll(myText, "\u00BE", `3/4`)
-	myText = strings.ReplaceAll(myText, "\u02DC", ` `)
-	myText = strings.ReplaceAll(myText, "\u00A0", ` `)
-	return myText
+	var returnText string
+	returnText = strings.Replace(myText, "\uFFFD", `\\'`, -1)
+	returnText = strings.Replace(myText, "\u201A", `\\'`, -1)
+	returnText = strings.Replace(myText, "\u2018", `\\'`, -1)
+	returnText = strings.Replace(myText, "\u2019", `\\'`, -1)
+	returnText = strings.Replace(myText, "\u201c", `\\"`, -1)
+	returnText = strings.Replace(myText, "\u201d", `\\"`, -1)
+	returnText = strings.Replace(myText, "\u201e", `\\"`, -1)
+	returnText = strings.Replace(myText, "\u02C6", `^`, -1)
+	returnText = strings.Replace(myText, "\u2039", `<`, -1)
+	returnText = strings.Replace(myText, "\u203A", `>`, -1)
+	returnText = strings.Replace(myText, "\u2013", `-`, -1)
+	returnText = strings.Replace(myText, "\u2014", `--`, -1)
+	returnText = strings.Replace(myText, "\u2026", `...`, -1)
+	returnText = strings.Replace(myText, "\u00A9", `(c)`, -1)
+	returnText = strings.Replace(myText, "\u00AE", `(r)`, -1)
+	returnText = strings.Replace(myText, "\u2122", `TM`, -1)
+	returnText = strings.Replace(myText, "\u00BC", `1/4`, -1)
+	returnText = strings.Replace(myText, "\u00BD", `1/2`, -1)
+	returnText = strings.Replace(myText, "\u00BE", `3/4`, -1)
+	returnText = strings.Replace(myText, "\u02DC", ` `, -1)
+	returnText = strings.Replace(myText, "\u00A0", ` `, -1)
+	return returnText
 }
 
 //SlackResponse represents a slack response
