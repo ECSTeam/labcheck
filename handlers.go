@@ -216,6 +216,13 @@ func labCheck(w http.ResponseWriter, r *http.Request) {
 		}
 		slackResponse.Attachments = append(slackResponse.Attachments, attachment)
 
+		if slack.Text != slack.OriginalText {
+			attachment := Attachments{
+				Text: "Original text contained special, incompatible, characters. \n*Original text*: `" + slack.OriginalText + "`\n*Cleansed text*: `" + slack.Text + "`",
+			}
+			slackResponse.Attachments = append(slackResponse.Attachments, attachment)
+		}
+
 		Render.JSON(w, http.StatusOK, slackResponse)
 
 		//HTML doesn't render in slack...but if it did!!!
@@ -236,7 +243,8 @@ func initSlackRequest(r *http.Request) model.Slack {
 	var slack model.Slack
 	slack.Command = r.FormValue("command")
 	slack.User = r.FormValue("user_name")
-	slack.Text = r.FormValue("text")
+	slack.OriginalText = r.FormValue("text")
+	slack.Text = cleanupSmartQuotes(slack.OriginalText)
 	slack.ResponseURL = r.FormValue("response_url")
 	slack.TeamDomain = r.FormValue("team_domain")
 	slack.ChannelID = r.FormValue("channel_id")
@@ -247,6 +255,31 @@ func initSlackRequest(r *http.Request) model.Slack {
 
 	return slack
 
+}
+
+func cleanupSmartQuotes(myText string) string {
+	myText = strings.ReplaceAll(myText, "\uFFFD", `'`)
+	myText = strings.ReplaceAll(myText, "\u201A", `'`)
+	myText = strings.ReplaceAll(myText, "\u2018", `'`)
+	myText = strings.ReplaceAll(myText, "\u2019", `'`)
+	myText = strings.ReplaceAll(myText, "\u201c", `"`)
+	myText = strings.ReplaceAll(myText, "\u201d", `"`)
+	myText = strings.ReplaceAll(myText, "\u201e", `"`)
+	myText = strings.ReplaceAll(myText, "\u02C6", `^`)
+	myText = strings.ReplaceAll(myText, "\u2039", `<`)
+	myText = strings.ReplaceAll(myText, "\u203A", `>`)
+	myText = strings.ReplaceAll(myText, "\u2013", `-`)
+	myText = strings.ReplaceAll(myText, "\u2014", `--`)
+	myText = strings.ReplaceAll(myText, "\u2026", `...`)
+	myText = strings.ReplaceAll(myText, "\u00A9", `(c)`)
+	myText = strings.ReplaceAll(myText, "\u00AE", `(r)`)
+	myText = strings.ReplaceAll(myText, "\u2122", `TM`)
+	myText = strings.ReplaceAll(myText, "\u00BC", `1/4`)
+	myText = strings.ReplaceAll(myText, "\u00BD", `1/2`)
+	myText = strings.ReplaceAll(myText, "\u00BE", `3/4`)
+	myText = strings.ReplaceAll(myText, "\u02DC", ` `)
+	myText = strings.ReplaceAll(myText, "\u00A0", ` `)
+	return myText
 }
 
 //SlackResponse represents a slack response
