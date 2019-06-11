@@ -116,6 +116,18 @@ func TestAddLabAction(t *testing.T) {
 	}
 }
 
+func TestUpdateLabWithSmartQuotesAction(t *testing.T) {
+	log.Print("/// TestUpdateLabWithSmartQuotesAction ///")
+	var labname := "lab10"
+	var s Slack
+    myText := " {\u201cversion:2.3.6\u201d, \u201cdesc\u201d:\u201cThis is what I’m sayin’\u201d}"
+  	s.Text = "update "+labname+myText
+
+	TryAction(s)
+
+
+}
+
 func NewLab(name string) *Lab {
 	if name != "" {
 		return nil

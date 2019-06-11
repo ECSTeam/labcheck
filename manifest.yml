@@ -2,6 +2,6 @@
 applications:
   - name: labcheck
     env:
-      GOVERSION: go1.9
+      GOVERSION: go1.11.4
       GOOGLE_APPLICATION_CREDENTIALS: ./ECSGCPCert.json
       LOCAL: false
